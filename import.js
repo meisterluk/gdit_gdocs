@@ -575,10 +575,10 @@ function readData(sheet)
   var found_start = false;
   for (var offset=0; offset<5; offset++)
   {
-    var current = content(range.getCell(source_start_col,
-                                source_start_row + offset).getValue());
-    var next = content(range.getCell(source_start_col + 1,
-                            source_start_row + offset + 1).getValue());
+    var current = content(range.getCell(source_start_row + offset,
+                  source_start_col).getValue());
+    var next    = content(range.getCell(source_start_row + offset + 1,
+                  source_start_col + 1).getValue());
 
     if (current != false && next != false)
     {
@@ -587,7 +587,7 @@ function readData(sheet)
       break;
     }
   }
-  
+
   if (!found_start)
   {
     log.warn(E_START.replace(/%s/, source_start_col)
