@@ -350,7 +350,7 @@ function getCurrentSemesterId()
 //
 function requestParameters()
 {
-  autoload_config();
+  autoloadConfig();
 
   var ass = SpreadsheetApp.getActiveSpreadsheet();
   var app = UiApp.createApplication().setTitle('Parameter setzen');
@@ -395,7 +395,7 @@ function requestParameters()
 //
 // Read configuration from PDS.
 //
-function autoload_config()
+function autoloadConfig()
 {
   var config = pds.load();
   if (config !== false) {
@@ -415,7 +415,7 @@ function autoload_config()
 //
 // @return bool   indicating success or failure
 //
-function check_datastructure()
+function checkDatastructure()
 {
   if (data['tutors'].length === 0)
     log.warn(E_NO_TUTORS);
@@ -438,9 +438,9 @@ function check_datastructure()
 //
 // Create participants spreadsheet and write data accordingly.
 //
-function write_data()
+function writeData()
 {
-  autoload_config();
+  autoloadConfig();
   pds.close();
 
   // Create participants spreadsheet
@@ -689,7 +689,7 @@ function check()
   log.loud();
   var success = readData(SpreadsheetApp.getActiveSpreadsheet()
                                         .getActiveSheet());
-  success = success && check_datastructure();
+  success = success && checkDatastructure();
   if (success)
     Browser.msgBox("Test bestanden :-)");
   else
@@ -708,8 +708,8 @@ function import()
     Browser.msgBox("Daten gelesen :-)");
   else
     Browser.msgBox("Abbruch.");
-  check_datastructure();
-  write_data();
+  checkDatastructure();
+  writeData();
 }
 
 //
