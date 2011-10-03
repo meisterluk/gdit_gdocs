@@ -41,6 +41,7 @@ E_NONEXISTENT_FIELD = "Zelle (%d, %d) [%s] enthält keinen bekannten "
 E_GMAIL = "Bei %s scheint es sich um keine gmail Emailadresse zu "
         + "handeln. Dies ist jedoch notwendig um die Berechtigungen "
         + "zu setzen.";
+E_EMPTY_SHEET = "Es sind keine Daten vorhanden.";
 
 // global data structure
 data = {};
@@ -575,7 +576,7 @@ function write_data()
 // @param sheet object  a Sheet instance to read
 // @return bool         success (true) or failure (false)
 //
-function read_data(sheet)
+function readData(sheet)
 {
   var range = sheet.getDataRange();
   data['tutors'] = [];
@@ -586,6 +587,12 @@ function read_data(sheet)
   var source_start_row  = IMPORT_ROW;
   var source_end_col    = range.getLastColumn();
   var source_end_row    = range.getLastRow();
+
+  if (source_end_row === 1)
+  {
+    log.error(E_EMPTY_SHEET);
+    return false;
+  }
 
   var found_start = false;
   for (var offset=0; offset<5; offset++)
@@ -702,13 +709,13 @@ function set()
 function check()
 {
   log.loud();
-  var success = read_data(SpreadsheetApp.getActiveSpreadsheet()
+  var success = readData(SpreadsheetApp.getActiveSpreadsheet()
                                         .getActiveSheet());
   success = success && check_datastructure();
   if (success)
     Browser.msgBox("Test bestanden :-)");
   else
-    Browser.msgBox("Test negativ!");
+    Browser.msgBox("Test nicht bestanden!");
 }
 
 //
@@ -717,7 +724,7 @@ function check()
 function import()
 {
   log.silent();
-  var success = read_data(SpreadsheetApp.getActiveSpreadsheet()
+  var success = readData(SpreadsheetApp.getActiveSpreadsheet()
                                         .getActiveSheet());
   if (success)
     Browser.msgBox("Daten gelesen :-)");
