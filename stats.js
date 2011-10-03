@@ -452,7 +452,7 @@ function readStat(col_1, col_2, start_row, end_row)
 //
 function requestStatsParameters()
 {
-  autoload_config();
+  autoloadConfig();
 
   var ass = SpreadsheetApp.getActiveSpreadsheet();
   var app = UiApp.createApplication().setTitle('Parameter setzen');
@@ -494,7 +494,7 @@ function requestStatsParameters()
 //
 function requestExportParameters()
 {
-  autoload_config();
+  autoloadConfig();
 
   var ass = SpreadsheetApp.getActiveSpreadsheet();
   var app = UiApp.createApplication().setTitle('Parameter setzen');
@@ -557,7 +557,7 @@ function configureStatsManually(stats)
 //
 // Read configuration from PDS.
 //
-function autoload_config()
+function autoloadConfig()
 {
   var config = pds.load();
   if (config !== false) {
@@ -679,7 +679,7 @@ function setExportParameters()
 //
 function readData(write, students_feedback)
 {
-  autoload_config();
+  autoloadConfig();
   
   // create map to get (column_id => exercise_id) association
   var exercises = {};

@@ -296,7 +296,7 @@ function endswith(string, substr)
 // @return object Array[group_id, day, start, end]
 //                (here: [3, "Montag", 11, 12])
 //
-function group_split(string)
+function groupSplit(string)
 {
   var split = string.match(/Gr(uppe(n|nnr|nnummer)?|oup)\s+(\d+)[-,.]/);
   if (split)
@@ -341,28 +341,6 @@ function getCurrentSemesterId()
 //----------------------------------------------------------------------
 // FUNCTIONALITY
 //----------------------------------------------------------------------
-
-//
-// Iterate over students and get set of groups.
-//
-// @param data Array    a data structure used to represent participants
-// @return list         an Array of unique elements
-// 
-function group_set(data)
-{
-  var set = [];
-  
-  for (var student in data['students'])
-  {
-    var group_data = group_split(student['gname']);
-    var val = parseInt(group_data[0]);
-    var found = contains(set, val);
-    if (!found)
-      set.push(val);
-  }
-  
-  return set;
-}
 
 //
 // Create a UserInterface to request parameters for creation of
@@ -501,7 +479,7 @@ function write_data()
   for (var student in data['students'])
   {
     var st_data = data['students'][student];
-    grp = group_split(st_data['gname']);
+    grp = groupSplit(st_data['gname']);
     var user = twiki_username(st_data["name"], st_data["familyname"]);
     
     range.getCell(row_nr, 1).setValue(grp[0]);
@@ -548,7 +526,7 @@ function write_data()
   for (var tutor in data['tutors'])
   {
     var tu_data = data['tutors'][tutor];
-    grp = group_split(tu_data["gname"]);
+    grp = groupSplit(tu_data["gname"]);
     var user = twiki_username(tu_data["name"], tu_data["familyname"]);
 
     range.getCell(row_nr, 1).setValue(grp[0]);
