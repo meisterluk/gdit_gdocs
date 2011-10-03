@@ -706,10 +706,13 @@ function import()
                                         .getActiveSheet());
   if (success)
     Browser.msgBox("Daten gelesen :-)");
-  else
+  else {
     Browser.msgBox("Abbruch.");
+    return false;
+  }
   checkDatastructure();
   writeData();
+  return true;
 }
 
 //
