@@ -35,9 +35,12 @@ E_NO_TUTORS = _E_NO.replace("%s", "Tutoren");
 E_NO_STUDENTS = _E_NO.replace("%s", "Studenten");
 E_START = "Ich konnte keine Tabelle entdecken. Abbruch. :-(";
         + "Ich werde es trotzdem als Feldname akzeptieren.";
-E_NONEXISTENT_FIELD = "Zelle (%d, %d) [%s] enthält keinen bekannten "
-                    + " source_key. Handelt es sich wirklich um "
-                    + "TUG Online Quelldaten?";
+//E_NONEXISTENT_FIELD = "Zelle (%d, %d) [%s] enthält keinen bekannten "
+//                    + " source_key. Handelt es sich wirklich um "
+//                    + "TUG Online Quelldaten?";
+E_FIELD_NOT_FOUND = "Ich werde leider abbrechen müssen, da die "
+                  + "folgenden [essenziellen] Felder nicht gefunden "
+                  + "werden konnten: ";
 E_GMAIL = "Bei %s scheint es sich um keine gmail Emailadresse zu "
         + "handeln. Dies ist jedoch notwendig um die Berechtigungen "
         + "zu setzen.";
@@ -47,7 +50,7 @@ E_EMPTY_SHEET = "Es sind keine Daten vorhanden.";
 data = {};
 
 // field names to read
-source_keys = {
+fields_config = {
     // key: uppercase, trimmed name of the column
     // value: two value tuple:
     //        [0] the field ID for internal usage (you don't want to change it)
@@ -55,19 +58,19 @@ source_keys = {
     //            if false, the value differs for each student
     //            if null, the value will not be read and processed
     // Note. In current implementation, if given key is not defined in
-    //       source_keys, it behaves like [null, null].
-    '^(REG\\w+_NUM\\w+|MATR\\w+)$'  : ["matrnr", false],
-    '^(CODE\\w+STUDY\\w+)$'         : ["study", false],
-    '(FAMILY|SEC(OND)?)\\w*NAME'    : ["familyname", false],
-    '(FIRST|FORE)\\w*NAME'          : ["name", false],
-    'E?MAIL'                        : ["mail", false],
-    'ASSESS'                        : ["assessment", true],
-    '(NUM|ID)\\w+(COURSE|LV)'       : ["courseID", true],
-    '(SEM)\\w+(COURSE|LV)'          : ["semester", true],
-    '(COURSE|LV)\\w+TYP'            : ["ctype", true],
-    '(COURSE|LV)\\w+TITLE'          : ["title", true],
-    '(EXAMINER|PROF)'               : ["prof", true],
-    'GROUP'                         : ["gname", false]
+    //       fields_config, it behaves like [null, null].
+    '^(REG\\w+_NUM\\w+|MATR\\w+)$'    : ["matrnr", false],
+    '^(CODE\\w+STUDY\\w+)$'           : ["study", false],
+    '(FAMILY|SEC(OND)?|NACH)\\w*NAME' : ["familyname", false],
+    '(FIRST|FORE|VOR)\\w*NAME'        : ["name", false],
+    'E?MAIL'                          : ["mail", false],
+    '(ASSESS|PRÜF|EXAM)'              : ["assessment", true],
+    '(NUM|ID)\\w+(COURSE|LV)'         : ["courseID", true],
+    '(SEM)\\w+(COURSE|LV)'            : ["semester", true],
+    '(COURSE|LV)\\w+TYP'              : ["ctype", true],
+    '(COURSE|LV)\\w+TIT(LE|EL)'       : ["title", true],
+    '(EXAMINER|PROF)'                 : ["prof", true],
+    '(GROUP|GRUPPE)'                  : ["gname", false]
 };
 
 //----------------------------------------------------------------------
@@ -427,6 +430,7 @@ function checkDatastructure()
   {
     if (!endswith(data.tutors[tutor_nr]["mail"], "gmail.com"))
     {
+      Logger.log(tutor_nr);
       log.warn(E_GMAIL.replace(/%s/, data.tutors[tutor_nr]["mail"]));
       break;
     }
@@ -440,6 +444,15 @@ function checkDatastructure()
 //
 function writeData()
 {
+  if (data['students'].length === 0)
+  {
+    Browser.msgBox("writeData() wurde aufgerufen, aber keine Daten "
+             + "zum Verarbeiten sind vorhanden. Wurde readData() "
+             + "vorher aufgerufen? Vielleicht konnten die gelesenen "
+             + "Daten nicht gespeichert werden?!");
+    return false;
+  }
+
   autoloadConfig();
   pds.close();
 
@@ -545,6 +558,8 @@ function writeData()
     
     row_nr++;
   }
+  
+  return true;
 }
 
 //
@@ -595,31 +610,28 @@ function readData(sheet)
     return false;
   }
 
+  // read data from tabular structure
+
   var active_column = [];
+  var is_first_valid_column = true;
+  var tmp_flag = true;
+
+  // create a list of all fields, which should be filled up
+  // for each student
+  var missing_fields = {};
+  for (var index in fields_config)
+    if (fields_config[index][1] !== null)
+      missing_fields[fields_config[index][0]] = true;
+
   for (var col=source_start_col; col<=source_end_col; col++)
   {
-    var index_counter = { 'students' : 0, 'tutors' : 0 };
+    var students_counter = 0;
+    var tutors_counter = 0;
+    active_column = [];
+    rows_loop:
     for (var row=source_start_row; row<=source_end_row; row++)
     {
       var val = content(range.getCell(row, col).getValue());
-      
-      // if is first row, expect source_key
-      if (row === source_start_row)
-      {
-        for (var regex in source_keys)
-        {
-          var re = new RegExp(regex, "i");
-          if (val.match(re))
-            active_column = source_keys[regex];
-        }
-      }
-      
-      if (active_column == false)
-      {
-        log.error(E_NONEXISTENT_FIELD.replace(/%d/, col)
-                  .replace(/%d/, row).replace(/%s/, val));
-        return false;
-      }
 
       // evaluate type
       if (range.getCell(row, col).getFontWeight() === "bold")
@@ -627,27 +639,94 @@ function readData(sheet)
       else
         var type = 'students';
 
-      // if is first column, create a new student/tutor instance
-      if (col === source_start_col)
-        data[type].push({});
+      // if is first row, expect field name
+      if (row === source_start_row)
+      {
+        for (var regex in fields_config)
+        {
+          var re = new RegExp(regex, "i");
+          if (val.match(re))
+          {
+            active_column = fields_config[regex];
+            missing_fields[fields_config[regex][0]] = false;
+            break;
+          }
+        }
 
-      // if row > first, expect normal data value
-      if (row !== source_start_row) {
+        // if field name cannot be found, write error and skip column
+        if (active_column.length === 0)
+        {
+          Logger.log("'" + val + "' is not a known TUG Online field");
+          break rows_loop;
+        } else {
+          if (tmp_flag && is_first_valid_column)
+            tmp_flag = false;
+          else if (!tmp_flag && is_first_valid_column)
+            is_first_valid_column = false;
+        }
+      } else {
+        // if is not first row
+
+        // if is first column, create a new student/tutor instance
+        if (is_first_valid_column)
+          data[type].push({});
+
         if (active_column[1] === true)
           data[active_column[0]] = val;
         else if (active_column[1] === false)
-          data[type][index_counter[type]][active_column[0]] = val;
-        else if (active_column[1] === null)
-          continue;
+        {
+          //data[type][data[type].length - 1][active_column[0]] = val;
+          if (type === "students")
+            data[type][students_counter++][active_column[0]] = val;
+          else
+            data[type][tutors_counter++][active_column[0]] = val;
+        } else if (active_column[1] === null)
+          break rows_loop;
         else
-          log.error("Invalide source_keys Konfiguration");
+          log.error("Invalide fields_config Konfiguration");
       }
-      index_counter[type]++;
     }
   }
 
+  // <hack why="because current CSV format does not supply enough information"
+  //       what="hardcoding data" which="bad">
+  if (!("assessment" in data))
+    data["assessment"] = "16.12.2011";
+  if (!("courseID" in data))
+    data["courseID"] = "716.231";
+  if (!("semester" in data))
+    data["semester"] = "11W";
+  if (!("ctype" in data))
+    data["ctype"] = "UE";
+  if (!("title" in data))
+    data["title"] = "Grundlagen der Informatik";
+  if (!("prof" in data))
+    data["prof"] = "Vo"+"it K"+"ar"+"l Di"+"pl.-Ing.";
+  for (var index in data.students)
+    data['students'][index]['study'] = "F 033 000";
+  for (var index in data.tutors)
+    data['tutors'][index]['study'] = "F 033 000";
+
+  var mark = ["assessment", "courseID", "semester", "ctype", "title",
+              "prof", "study"];
+  for (var index in mark)
+    missing_fields[mark[index]] = false;
+  // </hack>
+
+  var missing_items = [];
+  for (var index in missing_fields)
+    if (missing_fields[index])
+      missing_items.push(index);
+
+  if (missing_items.length > 0)
+  {
+    log.error(E_FIELD_NOT_FOUND + missing_items.join(", "));
+    return false;
+  }
+  Logger.log(data);
+
   // Okay, now we have the data stored in var data.
-  
+
   return true;
 }
 
@@ -711,7 +790,9 @@ function import()
     return false;
   }
   checkDatastructure();
-  writeData();
+  if (writeData())
+    Browser.msgBox("Spreadsheet '" + SSHEET_NAME_DEFAULT
+                 + "' wurde erzeugt :-)");
   return true;
 }
 
