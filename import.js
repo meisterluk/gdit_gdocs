@@ -64,7 +64,7 @@ fields_config = {
     '(FAMILY|SEC(OND)?|NACH)\\w*NAME' : ["familyname", false],
     '(FIRST|FORE|VOR)\\w*NAME'        : ["name", false],
     'E?MAIL'                          : ["mail", false],
-    '^(SEMESTER\\w+STUD(IUM|Y))$'     : ["st_semester", false],
+    '^(SEMESTER.*STUD(IUM|Y))$'       : ["st_semester", false],
     '(ASSESS|PRÜF|EXAM)'              : ["assessment", true],
     '(NUM|ID)\\w+(COURSE|LV)'         : ["courseID", true],
     '(SEM)\\w+(COURSE|LV)'            : ["semester", true],
