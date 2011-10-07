@@ -54,16 +54,17 @@ fields_config = {
     // key: uppercase, trimmed name of the column
     // value: two value tuple:
     //        [0] the field ID for internal usage (you don't want to change it)
-    //        [1] if true, the value is assumed to be equal for all students
-    //            if false, the value differs for each student
+    //        [1] if true, the value is assumed to be equal for all participants
+    //            if false, the value differs for each participants
     //            if null, the value will not be read and processed
     // Note. In current implementation, if given key is not defined in
     //       fields_config, it behaves like [null, null].
     '^(REG\\w+_NUM\\w+|MATR\\w+)$'    : ["matrnr", false],
-    '^(CODE\\w+STUDY\\w+)$'           : ["study", false],
+    '^(CODE\\w+STUDY\\w+|STUDIUM)$'   : ["study", false],
     '(FAMILY|SEC(OND)?|NACH)\\w*NAME' : ["familyname", false],
     '(FIRST|FORE|VOR)\\w*NAME'        : ["name", false],
     'E?MAIL'                          : ["mail", false],
+    '^(SEMESTER\\w+STUD(IUM|Y))$'     : ["st_semester", false],
     '(ASSESS|PRÜF|EXAM)'              : ["assessment", true],
     '(NUM|ID)\\w+(COURSE|LV)'         : ["courseID", true],
     '(SEM)\\w+(COURSE|LV)'            : ["semester", true],
@@ -551,7 +552,7 @@ function writeData()
     range.getCell(row_nr, 7).setValue(tu_data["name"]);
     range.getCell(row_nr, 8).setValue(tu_data["matrnr"]);
     range.getCell(row_nr, 9).setValue(tu_data["study"]);
-    range.getCell(row_nr, 10).setValue(0);
+    range.getCell(row_nr, 10).setValue(tu_data["st_semester"]);
     range.getCell(row_nr, 11).setValue(data["assessment"]);
     range.getCell(row_nr, 12).setValue(tu_data["mail"]);
     range.getCell(row_nr, 13).setValue("");
@@ -703,12 +704,22 @@ function readData(sheet)
   if (!("prof" in data))
     data["prof"] = "Vo"+"it K"+"ar"+"l Di"+"pl.-Ing.";
   for (var index in data.students)
-    data['students'][index]['study'] = "F 033 000";
+  {
+    if (!("study" in data['students'][index]))
+      data['students'][index]['study'] = "F 033 000";
+    if (!("st_semester" in data['students'][index]))
+      data['students'][index]['st_semester'] = 0;
+  }
   for (var index in data.tutors)
-    data['tutors'][index]['study'] = "F 033 000";
+  {
+    if (!("study" in data['tutors'][index]))
+      data['tutors'][index]['study'] = "F 033 000";
+    if (!("st_semester" in data['tutors'][index]))
+      data['tutors'][index]['st_semester'] = 0;
+  }
 
   var mark = ["assessment", "courseID", "semester", "ctype", "title",
-              "prof", "study"];
+              "prof", "study", "st_semester"];
   for (var index in mark)
     missing_fields[mark[index]] = false;
   // </hack>
@@ -784,7 +795,7 @@ function import()
   var success = readData(SpreadsheetApp.getActiveSpreadsheet()
                                         .getActiveSheet());
   if (success)
-    Browser.msgBox("Daten gelesen :-)");
+    Browser.msgBox("Daten gelesen :-) Werde Spreadsheet erzeugen");
   else {
     Browser.msgBox("Abbruch.");
     return false;
