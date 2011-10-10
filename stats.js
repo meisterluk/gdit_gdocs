@@ -355,13 +355,13 @@ function getNumberOfTutors()
 //
 function pointsToMark(points)
 {
-  if (points > 64)
+  if (points >= 88)
     return 1;
-  else if (points > 55)
+  else if (points >= 76)
     return 2;
-  else if (points > 46)
+  else if (points >= 63)
     return 3;
-  else if (points > 37)
+  else if (points >= 51)
     return 4;
   else
     return 5;

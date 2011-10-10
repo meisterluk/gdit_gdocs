@@ -455,7 +455,9 @@ function writeData()
   }
 
   autoloadConfig();
-  pds.close();
+  // do enable, if you want the temporary storage sheet to be deleted,
+  // if writeData is called
+  //pds.close();
 
   // Create participants spreadsheet
   var ss = SpreadsheetApp.create(SSHEET_NAME_DEFAULT);
