@@ -23,8 +23,8 @@ SOURCE_STUD_TWNAME_COL = 5;
 SOURCE_TUTS_TWNAME_COL = 7;
 
 // inputBoxes do not allow default values. This var cannot be used.
-//COPY_SPREADSHEET = "[GDI] Gruppe N";
-BASENAME_GROUP_SSS = '[GDI] Gruppe %d';
+//COPY_SPREADSHEET = "[GDIT] Gruppe N";
+BASENAME_GROUP_SSS = '[GDIT] Gruppe %d';
 
 // data structure to store students & tutors
 data = {'students' : [], 'tutors' : {}, 'groups' : [], 'email' : {}};
@@ -124,7 +124,6 @@ function columnId(column_index)
     for (; column_index>26; column_index-=26)
       first_letter += 1;
     second_letter = column_index;
-    console.log(first_letter, second_letter);
     return String.fromCharCode(64 + first_letter)
          + String.fromCharCode(64 + second_letter);
   } else
@@ -726,8 +725,10 @@ function generateSpreadsheets(base_ss)
           {
             var sheet_ref = sheet_names[col - ben_first_ex_col + 1];
             var ex_ref    = total_points[col - ben_first_ex_col];
-            range.getCell(row, col).setFormula("='" + sheet_ref + "'!"
-                 + columnId(ex_ref[1] + s_index) + ex_ref[0]);
+            var reference = sheet_ref + "'!"
+                          + columnId(ex_ref[1] + s_index) + ex_ref[0];
+            range.getCell(row, col).setFormula("=IF(" + reference
+                    + "<0,0," + reference + ")");
           }
           
           range.getCell(row, ben_totalpoints_col)
@@ -766,6 +767,8 @@ function generateSpreadsheets(base_ss)
         }
       }
     }
+    
+    Browser.msgBox("Spreadsheet für Gruppe " + g_index + " erzeugt");
   }
   Browser.msgBox("Spreadsheets erzeugt :)");
 }

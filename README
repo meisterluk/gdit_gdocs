@@ -14,7 +14,7 @@ gdit_docs is a domain-specific script collection to support tutors
 using Google Docs during the course.
 
 * old spreadsheets are templates #done
-* optional fields for point penalties including commentary possibility #todo
+* optional fields for point penalties including commentary possibility #done
 * Export for TUG Online is essential (but only data "GRADE") #done
 * Evaluation of tutors has to be done in spreadsheets and should be
   supported in that #done
@@ -31,6 +31,7 @@ Additional ones by myself
 * Manuals #done
 * filter students without any submission #withdrawn
 * hide marking scheme of second exercise for first tutor talk #partial
+* same marks for both students of 1 group #failed
 
 greets, meisterluk
 

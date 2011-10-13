@@ -16,8 +16,6 @@
 
 MATRNR_ROW    = 3; // row with matr.numbers
 NAME_ROW      = 2; // row with twiki names
-// row to highlight cell in in the end
-HIGHLIGHT_ROW = MATRNR_ROW;
 
 //----------------------------------------------------------------------
 // FUNCTIONALITY
@@ -212,7 +210,8 @@ function searchMatrNr()
         val = parseInt(val.toString().replace(/[^0-9]/g, ''));
         if (!isNaN(val) && numberSimilar(val, identifier))
         {
-          sheet.setActiveCell(range.getCell(HIGHLIGHT_ROW, col));
+          sheet.setActiveCell(range.getCell
+                  (range.getActiveCell.getRow(), col));
           found = true;
           break;
         }

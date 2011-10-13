@@ -1,7 +1,7 @@
 //
 // Import script.
 // Provides functionality to import data from TUG Online CSV dump
-// and create a "[GDI] Teilnehmer" spreadsheet.
+// and create a "[GDIT] Teilnehmer" spreadsheet.
 //
 //     :project:      gdit_gdocs
 //     :author:       meisterluk
@@ -27,7 +27,7 @@ MENU_ITEM_SET            = "1. Parameter setzen";
 MENU_ITEM_CHECK          = "(2.) Daten überprüfen";
 MENU_ITEM_IMPORT         = "3. Daten importieren";
 USER_BASEURL_DEFAULT  = 'http://gdi.ist.tugraz.at/gdi11/bin/view/Main/';
-SSHEET_NAME_DEFAULT      = '[GDI] Teilnehmer';
+SSHEET_NAME_DEFAULT      = '[GDIT] Teilnehmer';
 IMPORT_SHEETNAME_DEFAULT = ''; // if empty, filled with active sheetname
 _E_NO = "Nur zur Information: Die Anzahl der %s ist "
       + "0. Ich hoffe das ist korrekt.";
@@ -65,7 +65,7 @@ fields_config = {
     '(FIRST|FORE|VOR)\\w*NAME'        : ["name", false],
     'E?MAIL'                          : ["mail", false],
     '^(SEMESTER.*STUD(IUM|Y))$'       : ["st_semester", false],
-    '(ASSESS|PRÜF|EXAM)'              : ["assessment", true],
+    '(ASSESS|PRÜFUNG|EXAM)'           : ["assessment", true],
     '(NUM|ID)\\w+(COURSE|LV)'         : ["courseID", true],
     '(SEM)\\w+(COURSE|LV)'            : ["semester", true],
     '(COURSE|LV)\\w+TYP'              : ["ctype", true],
