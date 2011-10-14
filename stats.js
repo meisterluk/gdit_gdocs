@@ -5,8 +5,8 @@
 //
 //     :project:      gdit_gdocs
 //     :author:       meisterluk
-//     :date:         11.10.03
-//     :version:      0.3.0beta
+//     :date:         11.10.14
+//     :version:      1.0.0public
 //     :license:      GPLv3
 //
 // Table of Contents:

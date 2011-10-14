@@ -5,8 +5,8 @@
 //
 //     :project:      gdit_gdocs
 //     :author:       meisterluk
-//     :date:         11.10.03
-//     :version:      0.3.0beta
+//     :date:         11.10.14
+//     :version:      1.0.0public
 //     :license:      GPLv3
 //
 
@@ -115,7 +115,7 @@ function contains(parameter, value)
 function columnId(column_index)
 {
   if (column_index > 0 && column_index < 27)
-    return String.fromCharCode(64+column_index);
+    return String.fromCharCode(64 + column_index);
   else if (column_index > 26 && column_index < 703)
   {
     column_index -= 26;
@@ -469,29 +469,33 @@ function searchTwikiName()
 function createTpointsQuery(sheet, spec_col, col, start, end, bonus)
 {
   try {
+    // CTQ_ROWS_CACHE holds all row indizes with all points for the
+    // various exercises.
     CTQ_ROWS_CACHE;
+    if (CTQ_SHEET !== sheet.getName())
+      throw("Is different sheet. Update cache, please.");
   } catch (err) {
     // if CTQ_ROWS_CACHE is undefined
     CTQ_ROWS_CACHE = [];
-    var last_row = Math.max(start, end, bonus);
-    var last_col = Math.max(spec_col, col);
-    var range = sheet.getRange(1, 1, last_row, last_col);
+    var range = sheet.getRange(1, 1, end, spec_col);
     for (var row=start; row<=end; row++)
     {
       if (typeof(range.getCell(row, spec_col).getValue()) === "number")
+      {
         CTQ_ROWS_CACHE.push(row);
+      }
     }
+    CTQ_SHEET = sheet.getName();
   }
   var rows = [];
   for (var index in CTQ_ROWS_CACHE)
   {
-    Logger.log(columnId(col));
     var row = CTQ_ROWS_CACHE[index];
     rows.push("IF(" + columnId(col) + row + '="x",1,0)*$'
               + columnId(spec_col) + "$" + row);
   }
-  CTQ_ROWS_CACHE.push(columnId(spec_col) + bonus);
-  return '=SUM(' + CTQ_ROWS_CACHE.join(', ') + ')';
+  rows.push(columnId(col) + bonus);
+  return '=SUM(' + rows.join(', ') + ')';
 }
 
 
@@ -650,6 +654,8 @@ function readData()
 
 function generateSpreadsheets(base_ss)
 {
+  // TODO: These fields require a better usability design
+  
   // Benotung Spreadsheet
   var ben_first_student_row = 5;
   
@@ -661,12 +667,15 @@ function generateSpreadsheets(base_ss)
 
   var ben_first_ex_col    = 10;
   var ben_last_ex_col     = 12;
-  var total_points        = [[35, 4], [44, 4], [35, 4]];
   
   var ben_totalpoints_col = 14;
   var ben_mark_col        = 15;
   
   // Exercise(s) Spreadsheet
+  var total_points        = [[48, 4], [50, 4], [80, 4]];
+  var bonus               = [49, 51, 81];
+  var write               = [45, 47, 77];
+
   var spec_col            = 3;
   var first_student_col   = 4;
   var twiki_name_row      = 2;
@@ -677,8 +686,7 @@ function generateSpreadsheets(base_ss)
     var group = data['groups'][g_index];
     var ss_name = specifyGroup(BASENAME_GROUP_SSS, group);
     var ss = SpreadsheetApp.create(ss_name);
-    
-    // TODO
+
     var rights_config = {editorAccess: true, emailInvitations: true};
     ss.addCollaborators(data['email'][group], rights_config);
     
@@ -700,16 +708,19 @@ function generateSpreadsheets(base_ss)
         range.getCell(1, parseInt(index_)+1)
              .setValue(data['meta'][parseInt(index_)]);
       
-      if (trim(sheet.getName()) === "Benotung")
+      if (content(sheet.getName()) === "Benotung")
       {
         // write Benotungssheet data
         var range = sheet.getRange(1, 1, 
                data['students'].length + ben_first_student_row, 17);
-               
+      
+        var gs_counter = 0; // student in group counter
         for (var s_index in data['students'])
         {
-          s_index = parseInt(s_index);
-          var row = s_index + ben_first_student_row;
+          if (data['students'][s_index]['group'] !== group)
+            continue;
+
+          var row = gs_counter + ben_first_student_row;
           range.getCell(row, ben_group_col)
                .setValue(data['students'][s_index]['group']);
           range.getCell(row, ben_matrnr_col)
@@ -724,9 +735,11 @@ function generateSpreadsheets(base_ss)
           for (var col=ben_first_ex_col; col<=ben_last_ex_col; col++)
           {
             var sheet_ref = sheet_names[col - ben_first_ex_col + 1];
-            var ex_ref    = total_points[col - ben_first_ex_col];
-            var reference = sheet_ref + "'!"
-                          + columnId(ex_ref[1] + s_index) + ex_ref[0];
+            var ex_ref    = col - ben_first_ex_col;
+            var reference = "'" + sheet_ref + "'!"
+                          + columnId(total_points[ex_ref][1]
+                          + gs_counter)
+                          + write[ex_ref];
             range.getCell(row, col).setFormula("=IF(" + reference
                     + "<0,0," + reference + ")");
           }
@@ -739,19 +752,24 @@ function generateSpreadsheets(base_ss)
                   + columnId(ben_totalpoints_col) + col + ')), "?", '
                   + 'pointsToMark(' + columnId(ben_totalpoints_col)
                   + col + '))');
+          gs_counter++;
         }
       } else {
         // write exercisesheet data
         var range = sheet.getRange(1, 1, sheet.getLastRow(),
                     first_student_col + data['students'].length - 1);
+
+        var gs_counter = 0; // student in group counter
         for (var s_index in data['students'])
         {
-          s_index = parseInt(s_index);
-          var col = first_student_col + s_index;
+          if (data['students'][s_index]['group'] !== group)
+            continue;
+          
+          var col = first_student_col + gs_counter;
           var ref_t = "'Benotung'!" + columnId(ben_tname_col)
-                    + (ben_first_student_row + s_index);
+                    + (ben_first_student_row + gs_counter);
           var ref_m = "'Benotung'!" + columnId(ben_matrnr_col)
-                    + (ben_first_student_row + s_index);
+                    + (ben_first_student_row + gs_counter);
 
           range.getCell(twiki_name_row, col).setFormula
             ('=HYPERLINK(CONCATENATE("' + data['base'] + '", ' + ref_t +
@@ -759,16 +777,26 @@ function generateSpreadsheets(base_ss)
           range.getCell(martnr_row, col).setFontWeight("bold");
           range.getCell(martnr_row, col).setFormula('=' + ref_m);
           
+          var exercise_number = (parseInt(index) - 1);
           var start = Math.max(twiki_name_row, martnr_row);
-          var tpts = total_points[parseInt(index) - 1];
+          var tpts = total_points[exercise_number];
           var formula = createTpointsQuery(sheet, spec_col, col, start,
-                                           tpts[0], tpts[0] + 4);
-          range.getCell(tpts[0], tpts[1] + s_index).setValue(formula);
+                                   tpts[0], bonus[exercise_number]);
+          range.getCell(write[exercise_number],
+                        tpts[1] + gs_counter).setFormula(formula);
+          gs_counter++;
         }
       }
+      // delete default sheet
+      var default_sheet = ss.getSheetByName("Sheet1");
+      if (default_sheet !== null)
+      {
+        ss.setActiveSheet(default_sheet);
+        ss.deleteActiveSheet();
+      }
     }
-    
-    Browser.msgBox("Spreadsheet für Gruppe " + g_index + " erzeugt");
+
+    Browser.msgBox("Spreadsheet für Gruppe " + group + " erzeugt");
   }
   Browser.msgBox("Spreadsheets erzeugt :)");
 }

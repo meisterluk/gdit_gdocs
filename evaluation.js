@@ -5,8 +5,8 @@
 //
 //     :project:      gdit_gdocs
 //     :author:       meisterluk
-//     :date:         11.10.03
-//     :version:      0.3.0beta
+//     :date:         11.10.14
+//     :version:      1.0.0public
 //     :license:      GPLv3
 //
 
@@ -211,7 +211,7 @@ function searchMatrNr()
         if (!isNaN(val) && numberSimilar(val, identifier))
         {
           sheet.setActiveCell(range.getCell
-                  (range.getActiveCell.getRow(), col));
+                  (sheet.getActiveCell().getRow(), col));
           found = true;
           break;
         }
@@ -258,7 +258,8 @@ function searchTwikiName()
       val = val.toString().replace(/\s+/,'').toLowerCase();
       if (stringSimilar(val, identifier))
       {
-        sheet.setActiveCell(range.getCell(HIGHLIGHT_ROW, col));
+        sheet.setActiveCell(range.getCell
+            (sheet.getActiveCell().getRow(), col));
         found = true;
         break;
       }

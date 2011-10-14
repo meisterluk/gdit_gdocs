@@ -5,8 +5,8 @@
 //
 //     :project:      gdit_gdocs
 //     :author:       meisterluk
-//     :date:         11.10.03
-//     :version:      0.3.0beta
+//     :date:         11.10.14
+//     :version:      1.0.0public
 //     :license:      GPLv3
 //
 // Table of Contents:
@@ -308,12 +308,12 @@ function groupSplit(string)
   else
     var group_id = 0;
 
-  var split = string.match(/([MTWFSD]\w*)\s+(\d{1,2})-(\d{1,2})/);
+  var split = string.match(/([MTWFSD]\w*)\s+(\d{1,2}([.:]\d{1,2})?)-(\d{1,2}([.:]\d{1,2})?)/);
   if (split)
   {
     var wday = split[1];
     var time_start = parseInt(split[2]);
-    var time_end = parseInt(split[3]);
+    var time_end = parseInt(split[4]);
   } else {
     var wday = "?";
     var time_start = 0;
