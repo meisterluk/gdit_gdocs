@@ -465,7 +465,7 @@ function requestStatsParameters()
   var RANGE = 'Gebe den Anfang und das Ende der fortlaufenden Nummer '
             + 'an';
   var BOUND = 'Gebe eine Mindestpunktezahl an ab der die Studierenden '
-            + ' in der Statistik gezählt werden (-1 für "zähle alle")';
+            + ' in der Statistik gezählt werden (0 für "zähle alle")';
 
   var default_range = SOURCE_FIRST_GROUP + "-" + SOURCE_LAST_GROUP;
   var grid = app.createGrid(3, 2);
