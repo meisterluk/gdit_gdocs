@@ -40,6 +40,7 @@ SOURCE_BASENAME = '[GDIT] Gruppe %d';
 SOURCE_SHEETNAME = 'Benotung';
 SOURCE_FIRST_GROUP = 1;
 SOURCE_LAST_GROUP = 20;
+SOURCE_MINPOINTS = 20;
 
 IMPORT_SSNAME_DEFAULT = '[GDIT] Import';
 IMPORT_SHEETNAME_DEFAULT = 'Sheet1';
@@ -463,15 +464,20 @@ function requestStatsParameters()
            + 'fortlaufende Nummer ersetzt)';
   var RANGE = 'Gebe den Anfang und das Ende der fortlaufenden Nummer '
             + 'an';
+  var BOUND = 'Gebe eine Mindestpunktezahl an ab der die Studierenden '
+            + ' in der Statistik gezählt werden (-1 für "zähle alle")';
 
   var default_range = SOURCE_FIRST_GROUP + "-" + SOURCE_LAST_GROUP;
-  var grid = app.createGrid(2, 2);
+  var grid = app.createGrid(3, 2);
   grid.setWidget(0, 0, app.createLabel(BASE));
   grid.setWidget(0, 1, app.createTextBox().setName('basename')
                           .setText(SOURCE_BASENAME));
   grid.setWidget(1, 0, app.createLabel(RANGE));
   grid.setWidget(1, 1, app.createTextBox().setName('range')
                           .setText(default_range));
+  grid.setWidget(2, 0, app.createLabel(BOUND));
+  grid.setWidget(2, 1, app.createTextBox().setName('minpoints')
+                          .setText(SOURCE_MINPOINTS.toString()));
     
   var submit = app.createButton('Setzen');
   var handler = app.createServerClickHandler('submitStatsParameters');
@@ -567,6 +573,8 @@ function autoloadConfig()
       SOURCE_FIRST_GROUP = config['SOURCE_FIRST_GROUP'];
     if (config['SOURCE_LAST_GROUP'] !== undefined)
       SOURCE_LAST_GROUP = config['SOURCE_LAST_GROUP'];
+    if (config['SOURCE_MINPOINTS'] !== undefined)
+      SOURCE_MINPOINTS = parseInt(config['SOURCE_MINPOINTS']);
     if (config['IMPORT_SSNAME_DEFAULT'] !== undefined)
       IMPORT_SSNAME_DEFAULT = config['IMPORT_SSNAME_DEFAULT'];
     if (config['IMPORT_FIELD_MATR'] !== undefined)
@@ -593,6 +601,7 @@ function submitStatsParameters(e)
   
   // since this is not stored persistently ...
   SOURCE_BASENAME      = e.parameter.basename;
+  SOURCE_MINPOINTS     = e.parameter.minpoints;
   if (range_valid)
   {
     SOURCE_FIRST_GROUP      = range[0];
@@ -602,7 +611,8 @@ function submitStatsParameters(e)
   pds.store({
         SOURCE_BASENAME         : SOURCE_BASENAME,
         SOURCE_FIRST_GROUP      : SOURCE_FIRST_GROUP,
-        SOURCE_LAST_GROUP       : SOURCE_LAST_GROUP
+        SOURCE_LAST_GROUP       : SOURCE_LAST_GROUP,
+        SOURCE_MINPOINTS        : SOURCE_MINPOINTS
   });
   
   // Clean up - get the UiApp object, close it, and return
@@ -713,7 +723,7 @@ function readData(write, students_feedback)
     {
       data['tutors'][tutor] = [];
     }
-      
+
     if (add_info[0] === undefined  || add_info[1] === undefined)
     {
       add_info[0] = content(range.getCell(1, 2).getValue());
@@ -730,6 +740,10 @@ function readData(write, students_feedback)
       // Total points
       var points = range.getCell(row, SOURCE_TOTAL_POINTS_COLUMN)
                         .getValue();
+      // skip this student, if its less than SOURCE_MINPOINTS
+      if (points < SOURCE_MINPOINTS)
+        continue;
+
       if (typeof points !== "number")
         Logger.log("Obwohl die Matrikelnummer " + matrnr + " in '"
           + ss_name + "' eine valide Nummer ist, so sind es die "
@@ -1093,7 +1107,6 @@ function writeExportData()
   }
   
   var wrote_something = false;
-  Logger.log(data['students']);
   for (var row=1; row<range.getLastRow(); row++)
   {
     var val_matrnr = content(range.getCell(row, matrnr_col).getValue());
