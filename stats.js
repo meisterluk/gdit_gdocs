@@ -21,7 +21,7 @@
 //----------------------------------------------------------------------
 
 CELL11_TITLE = "Statistiken";
-EVALUATION_MAX_POINTS = 200;
+EVALUATION_MAX_POINTS = 100;
 STATS_FIRST_ROW = 2;
 STATS_FIRST_COL = 1;
 
@@ -792,7 +792,8 @@ function writeData()
   
   var stats = {};
   
-  var range = sheet.getRange(1, 1, 15 + getNumberOfTutors(), 4);  
+  var range = sheet.getRange(1, 1, 16 + getNumberOfTutors()
+                + EVALUATION_MAX_POINTS, 4);
   var first_column = sheet.getRange(1, 1, 1, 4);
 
   first_column.setFontSize(12);
@@ -878,6 +879,26 @@ function writeData()
                                          .toFixed(DEC));
     row_id++;
   }
+
+  // Punkteverteilung
+  range.getCell(row_id, 1).setFontWeight("bold");
+  range.getCell(row_id, 1).setValue("Punkte");
+  range.getCell(row_id, 2).setValue("Studenten");
+  row_id++;
+  pointsdistri = {};
+  for (var i=0; i<=EVALUATION_MAX_POINTS; i++)
+    pointsdistri[i] = 0;
+
+  for (var student in data['students'])
+    pointsdistri[data['students'][student]]++;
+
+  for (var i=0; i<=EVALUATION_MAX_POINTS; i++)
+  {
+    range.getCell(row_id + i, 1).setValue(i);
+    range.getCell(row_id + i, 2).setValue(pointsdistri[i]);
+  }
+
+  row_id = row_id + EVALUATION_MAX_POINTS + 1;
 }
 
 //
