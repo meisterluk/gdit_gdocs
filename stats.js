@@ -846,11 +846,10 @@ function writeData()
     for (var student in data['exercises'][exercise])
     {
       var add = false;
-      if (data['exercises'][exercise][student] >=
-        Math.max(1, EVALUATION_MAX_POINTS)
-      )
+      if (data['exercises'][exercise][student] > 0)
         participated_students++;
-      points.push(data['exercises'][exercise][student]);
+      if (data['exercises'][exercise][student] >= EVALUATION_MAX_POINTS)
+        points.push(data['exercises'][exercise][student]);
     }
     
     range.getCell(row_id, 1).setValue(exercise);
