@@ -398,8 +398,8 @@ function shortenString(value, limit, terminator)
 //   | Tutoren     | Durchschnittsnote   |   start_row
 //   +-------------+---------------------+
 //   | Lukas       |        3.5          |
-//   | Thomas      |        4.2          |    end_row
-//   +=============+=====================+
+//   | Thomas      |        4.2          |
+//   +=============+=====================+    end_row
 //
 //    =>
 //       {"topic" : "Tutoren", "field" : "Durchschnittsnote",
@@ -846,7 +846,9 @@ function writeData()
     for (var student in data['exercises'][exercise])
     {
       var add = false;
-      if (data['exercises'][exercise][student] > 0)
+      if (data['exercises'][exercise][student] >=
+        Math.max(1, EVALUATION_MAX_POINTS)
+      )
         participated_students++;
       points.push(data['exercises'][exercise][student]);
     }
@@ -927,8 +929,9 @@ function createChart()
 
   // get all ranges ((start, end) pairs between topics)
   var ranges = [[row_id]];
-  while (row_id <= data_range.getLastRow()
-         && content(data_range.getCell(row_id, 1).getValue()) != "")
+  while (row_id <= data_range.getLastRow() &&
+         (typeof(data_range.getCell(row_id, 1).getValue()) == 'number'
+         || !content(data_range.getCell(row_id, 1).getValue()) == ""))
   {
     if (data_range.getCell(row_id, 1).getFontWeight() === "bold")
     {
