@@ -7,7 +7,7 @@
 //     :author:       meisterluk
 //     :date:         11.10.14
 //     :version:      1.0.0public
-//     :license:      GPLv3
+//     :license:      LGPLv3
 //
 // Table of Contents:
 //     1. Global Configuration
