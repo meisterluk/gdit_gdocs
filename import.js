@@ -530,7 +530,7 @@ function writeData()
   range.getCell(3, 8).setValue("Matrikelnummer");
   range.getCell(3, 9).setValue("Studium");
   range.getCell(3, 10).setValue("Studiensemester");
-  range.getCell(3, 11).setValue("Anmeldedatum");
+  range.getCell(3, 11).setValue("Abschlussdatum");
   range.getCell(3, 12).setValue("Email");
   range.getCell(3, 13).setValue("Notiz");
   
@@ -692,13 +692,13 @@ function readData(sheet)
   }
 
   // <hack why="because current CSV format does not supply enough information"
-  //       what="hardcoding data" which="bad">
+  //       contains="hardcoded data">
   if (!("assessment" in data))
-    data["assessment"] = "16.12.2011";
+    data["assessment"] = "12.12.2011";
   if (!("courseID" in data))
     data["courseID"] = "716.231";
   if (!("semester" in data))
-    data["semester"] = "11W";
+    data["semester"] = "12W";
   if (!("ctype" in data))
     data["ctype"] = "UE";
   if (!("title" in data))
