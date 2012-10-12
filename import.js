@@ -5,7 +5,7 @@
 //
 //     :project:      gdit_gdocs
 //     :author:       meisterluk
-//     :date:         11.10.14
+//     :date:         12.10.12
 //     :version:      1.0.0public
 //     :license:      LGPLv3
 //
@@ -26,13 +26,13 @@ PLACEHOLDER              = '%s';
 MENU_ITEM_SET            = "1. Parameter setzen";
 MENU_ITEM_CHECK          = "(2.) Daten überprüfen";
 MENU_ITEM_IMPORT         = "3. Daten importieren";
-USER_BASEURL_DEFAULT  = 'http://gdi.ist.tugraz.at/gdi11/bin/view/Main/';
+USER_BASEURL_DEFAULT     = 'http://gdi.ist.tugraz.at/gdi12/bin/view/Main/';
 SSHEET_NAME_DEFAULT      = '[GDIT] Teilnehmer';
 IMPORT_SHEETNAME_DEFAULT = ''; // if empty, filled with active sheetname
-_E_NO = "Nur zur Information: Die Anzahl der %s ist "
-      + "0. Ich hoffe das ist korrekt.";
-E_NO_TUTORS = _E_NO.replace("%s", "Tutoren");
-E_NO_STUDENTS = _E_NO.replace("%s", "Studenten");
+_E_ZERO = "Nur zur Information: Die Anzahl der %s ist "
+        + "0. Ich hoffe das ist korrekt.";
+E_NO_TUTORS = _E_ZERO.replace("%s", "Tutoren");
+E_NO_STUDENTS = _E_ZERO.replace("%s", "Studenten");
 E_START = "Ich konnte keine Tabelle entdecken. Abbruch. :-(";
         + "Ich werde es trotzdem als Feldname akzeptieren.";
 //E_NONEXISTENT_FIELD = "Zelle (%d, %d) [%s] enthält keinen bekannten "
@@ -59,11 +59,12 @@ fields_config = {
     //            if null, the value will not be read and processed
     // Note. In current implementation, if given key is not defined in
     //       fields_config, it behaves like [null, null].
+    // Note. Case-insensitive regex.
     '^(REG\\w+_NUM\\w+|MATR\\w+)$'    : ["matrnr", false],
     '^(CODE\\w+STUDY\\w+|STUDIUM)$'   : ["study", false],
     '(FAMILY|SEC(OND)?|NACH)\\w*NAME' : ["familyname", false],
     '(FIRST|FORE|VOR)\\w*NAME'        : ["name", false],
-    'E?MAIL'                          : ["mail", false],
+    '(E(|-))?MAIL'                    : ["mail", false],
     '^(SEMESTER.*STUD(IUM|Y))$'       : ["st_semester", false],
     '(ASSESS|PRÜFUNG|EXAM)'           : ["assessment", true],
     '(NUM|ID)\\w+(COURSE|LV)'         : ["courseID", true],
