@@ -14,7 +14,7 @@
 // GLOBAL CONFIGURATION
 //----------------------------------------------------------------------
 
-SOURCE_SHEET_STUD = 'Studenten';
+SOURCE_SHEET_STUD = 'Studierende';
 SOURCE_SHEET_TUTS = 'Tutoren';
 
 SOURCE_STUD_MATRNR_COL = 2;
@@ -25,6 +25,9 @@ SOURCE_TUTS_TWNAME_COL = 7;
 // inputBoxes do not allow default values. This var cannot be used.
 //COPY_SPREADSHEET = "[GDIT] Gruppe N";
 BASENAME_GROUP_SSS = '[GDIT] Gruppe %d';
+
+// shall I add tutors as collaborators automatically?
+SET_PERMISSIONS = false;
 
 // data structure to store students & tutors
 data = {'students' : [], 'tutors' : {}, 'groups' : [], 'email' : {}};
@@ -263,7 +266,7 @@ function levenshtein(s1, s2)
 //
 function stringSimilar(string1, string2)
 {
-  var sensitivity = 3; // levensthein distance sensivitity
+  var sensitivity = 3; // levensthein distance sensitivity
   return levenshtein(string1, string2) < sensitivity;
 }
 
@@ -672,7 +675,7 @@ function generateSpreadsheets(base_ss)
   var ben_mark_col        = 15;
   
   // Exercise(s) Spreadsheet
-  var total_points        = [[48, 4], [50, 4], [80, 4]];
+  var total_points        = [[36, 4], [22, 4], [42, 4]];
   var bonus               = [49, 51, 81];
   var write               = [45, 47, 77];
 
@@ -687,8 +690,11 @@ function generateSpreadsheets(base_ss)
     var ss_name = specifyGroup(BASENAME_GROUP_SSS, group);
     var ss = SpreadsheetApp.create(ss_name);
 
-    var rights_config = {editorAccess: true, emailInvitations: true};
-    ss.addCollaborators(data['email'][group], rights_config);
+    if (SET_PERMISSIONS)
+    {
+      var rights_config = {editorAccess: true, emailInvitations: true};
+      ss.addCollaborators(data['email'][group], rights_config);
+    }
     
     // get sheets & - names
     var sheets = base_ss.getSheets();

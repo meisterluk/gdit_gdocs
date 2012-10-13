@@ -241,12 +241,13 @@ function twiki_username(first_name, last_name)
 {
   var name = first_name + last_name;
   
-  name = name.replace("ä", "ae");
-  name = name.replace("ö", "oe");
-  name = name.replace("ü", "ue");
+  name = name.replace("ä", "a");
+  name = name.replace("ö", "o");
+  name = name.replace("ü", "u");
   name = name.replace("ß", "ss");
   name = name.replace("-", "");
   name = name.replace("é", "e");
+  name = name.replace("ó", "o");
 
   return camel_case(name);
 }
@@ -536,7 +537,7 @@ function writeData()
                             .setValue("Tutoriumszeit (von | bis)")
                             .setHorizontalAlignment("center");
   range.getCell(3, 4).setValue("Tutoriumstag");
-  range.getCell(3, 5).setValue("Platz");
+  range.getCell(3, 5).setValue("Fix dabei");
   range.getCell(3, 6).setValue("Nachname");
   range.getCell(3, 7).setValue("Vorname");
   range.getCell(3, 8).setValue("Matrikelnummer");
@@ -561,7 +562,7 @@ function writeData()
     range.getCell(row_nr, 2).setValue(grp[2] + ":00");
     range.getCell(row_nr, 3).setValue(grp[3] + ":00");
     range.getCell(row_nr, 4).setValue(grp[1]);
-    range.getCell(row_nr, 5).setValue("unklar");
+    range.getCell(row_nr, 5).setValue("unbekannt");
     range.getCell(row_nr, 6).setValue(tu_data["familyname"]);
     range.getCell(row_nr, 7).setValue(tu_data["name"]);
     range.getCell(row_nr, 8).setValue(tu_data["matrnr"]);
