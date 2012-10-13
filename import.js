@@ -32,7 +32,7 @@ IMPORT_SHEETNAME_DEFAULT = ''; // if empty, filled with active sheetname
 _E_ZERO = "Nur zur Information: Die Anzahl der %s ist "
         + "0. Ich hoffe das ist korrekt.";
 E_NO_TUTORS = _E_ZERO.replace("%s", "Tutoren");
-E_NO_STUDENTS = _E_ZERO.replace("%s", "Studenten");
+E_NO_STUDENTS = _E_ZERO.replace("%s", "Studierende");
 E_START = "Ich konnte keine Tabelle entdecken. Abbruch. :-(";
         + "Ich werde es trotzdem als Feldname akzeptieren.";
 //E_NONEXISTENT_FIELD = "Zelle (%d, %d) [%s] enthält keinen bekannten "
@@ -41,9 +41,10 @@ E_START = "Ich konnte keine Tabelle entdecken. Abbruch. :-(";
 E_FIELD_NOT_FOUND = "Ich werde leider abbrechen müssen, da die "
                   + "folgenden [essenziellen] Felder nicht gefunden "
                   + "werden konnten: ";
-E_GMAIL = "Bei %s scheint es sich um keine gmail Emailadresse zu "
-        + "handeln. Dies ist jedoch notwendig um die Berechtigungen "
-        + "zu setzen.";
+W_GMAIL = "Endet die Emailadresse nicht mit gmail.com, weiß ich nicht, "
+        + "ob es sich zuverlässig um einen GDocs Benutzer handelt. Ich "
+        + "hoffe jedenfalls die folgenden Emailadressen passen:\n\n"
+        + "%s";
 E_EMPTY_SHEET = "Es sind keine Daten vorhanden.";
 
 // global data structure
@@ -51,9 +52,9 @@ data = {};
 
 // field names to read
 fields_config = {
-    // key: uppercase, trimmed name of the column
+    // key: case-insensitive regex to match field name.
     // value: two value tuple:
-    //        [0] the field ID for internal usage (you don't want to change it)
+    //        [0] the field ID for internal usage (you don't want to change it!)
     //        [1] if true, the value is assumed to be equal for all participants
     //            if false, the value differs for each participants
     //            if null, the value will not be read and processed
@@ -299,7 +300,7 @@ function endswith(string, substr)
 // @param string string    a string identifying tutorium datetime
 //                         eg. "Gruppe: Gruppe  3, Montag 11-12  "
 // @return object Array[group_id, day, start, end]
-//                (here: [3, "Montag", 11, 12])
+//                eg. [3, "Montag", 11, 12]
 //
 function groupSplit(string)
 {
@@ -428,15 +429,25 @@ function checkDatastructure()
   if (data['students'].length === 0)
     log.warn(E_NO_STUDENTS);
 
+  /*
+  Note. A gmail address can actually be any mail address.
+        Therefore only provide a warning. No error.
+  */
+  var wrong_mailaddresses = [];
   for (var tutor_nr in data.tutors)
   {
     if (!endswith(data.tutors[tutor_nr]["mail"], "gmail.com"))
     {
-      Logger.log(tutor_nr);
-      log.warn(E_GMAIL.replace(/%s/, data.tutors[tutor_nr]["mail"]));
-      break;
+      if (wrong_mailaddresses.indexOf(data.tutors[tutor_nr]["mail"]) == -1)
+      {
+        Logger.log(tutor_nr);
+        wrong_mailaddresses.push(data.tutors[tutor_nr]["mail"]));
+        //break;
+      }
     }
   }
+  log.warn(W_GMAIL.replace(/%s/, wrong_mailaddresses.join(",\n")));
+
 
   return true;
 }
@@ -464,7 +475,7 @@ function writeData()
   var ss = SpreadsheetApp.create(SSHEET_NAME_DEFAULT);
   var sheet = ss.getActiveSheet();
   
-  sheet.setName("Studenten");
+  sheet.setName("Studierende");
   
   var range = sheet.getRange(1, 1, data.students.length + 5, 6);
   var first_column = sheet.getRange(1, 1, 1, 6);
