@@ -442,7 +442,7 @@ function checkDatastructure()
       if (wrong_mailaddresses.indexOf(data.tutors[tutor_nr]["mail"]) == -1)
       {
         Logger.log(tutor_nr);
-        wrong_mailaddresses.push(data.tutors[tutor_nr]["mail"]));
+        wrong_mailaddresses.push(data.tutors[tutor_nr]["mail"]);
         //break;
       }
     }
