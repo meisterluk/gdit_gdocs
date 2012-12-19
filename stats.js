@@ -848,7 +848,7 @@ function writeData()
       var add = false;
       if (data['exercises'][exercise][student] > 0)
         participated_students++;
-      if (data['exercises'][exercise][student] >= EVALUATION_MAX_POINTS)
+      if (data['exercises'][exercise][student] >= SOURCE_MIN_POINTS)
         points.push(data['exercises'][exercise][student]);
     }
     
