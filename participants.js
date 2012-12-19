@@ -24,7 +24,7 @@ SOURCE_TUTS_TWNAME_COL = 7;
 
 // inputBoxes do not allow default values. This var cannot be used.
 //COPY_SPREADSHEET = "[GDIT] Gruppe N";
-BASENAME_GROUP_SSS = '[GDIT] Gruppe %d';
+BASENAME_GROUP_SSS = '[GDIT] Gruppe %d WSXX';
 
 // shall I add tutors as collaborators automatically?
 SET_PERMISSIONS = false;
@@ -117,6 +117,12 @@ function contains(parameter, value)
 //
 function columnId(column_index)
 {
+  if (column_index === 0)  // column_index are one-based.
+  {
+    Logger.log("columnId(0) called. 0 is an invalid parameter");
+    return '!';
+  }
+
   if (column_index > 0 && column_index < 27)
     return String.fromCharCode(64 + column_index);
   else if (column_index > 26 && column_index < 703)
@@ -158,6 +164,40 @@ function getOriginalSheetname(sheetname)
 function specifyGroup(basename, group_id)
 {
   return basename.toString().replace(/%d/, group_id.toString());
+}
+
+//
+// Return the exercise name for a specific exercise.
+// Each assignment has a special name. For example, the first one
+// is called "AufgabeEins". This function maps the exercise_number
+// to the name.
+//
+// @param exercise_number int    the exercise number to get string for
+// @return string  the corresponding exercise name.
+//
+function exercise_name(exercise_number)
+{
+  if (exercise_number < 1 || exercise_number > 10) {
+    Logger.log("exercise_name(" + exercise_number + ") called. " +
+               "Invalid parameter");
+    return "None";
+  }
+
+  title = "Aufgabe";
+  switch (exercise_number) {
+    case 1: title += "Eins"; break;
+    case 2: title += "Zwei"; break;
+    case 3: title += "Drei"; break;
+    case 4: title += "Vier"; break;
+    case 5: title += "Fünf"; break;
+    case 6: title += "Sechs"; break;
+    case 7: title += "Sieben"; break;
+    case 8: title += "Acht"; break;
+    case 9: title += "Neun"; break;
+    case 10: title += "Zehn"; break;
+  }
+
+  return title;
 }
 
 //
@@ -285,12 +325,12 @@ function numberSimilar(number1, number2)
 
   /*if(number1- (Math.pow(10, 4) * parseInt(number1/10000)) === number2)
     return true;*/
-  
+
   if (number1 > 1000)
   {
     var num1 = String(number1);
     var num2 = String(number2);
-    
+
     if (num1.length < num2.length)
     {
       var tmp = num1;
@@ -310,7 +350,7 @@ function numberSimilar(number1, number2)
       }
     }
   }
-  
+
   return false;
 }
 
@@ -338,7 +378,7 @@ function searchMatrNr()
     return searchMatrNr();
   } else {
     var base_spreadsheet = sheet;
-    
+
     // for students sheet
     var sheet = ss.getSheetByName(SOURCE_SHEET_STUD);
     if (sheet === null)
@@ -408,12 +448,12 @@ function searchTwikiName()
 
   identifier = identifier.toString().replace(/\s+/, '').toLowerCase();
   var base_spreadsheet = sheet;
-    
+
   // for students sheet
   var sheet = ss.getSheetByName(SOURCE_SHEET_STUD);
   if (sheet === null)
   {
-    Browser.msgBox("Studenten Sheet konnte leider nicht gefunden "
+    Browser.msgBox("Studierende Sheet konnte leider nicht gefunden "
                  + "werden :-(");
     return false;
   }
@@ -441,7 +481,7 @@ function searchTwikiName()
     return false;
   }
   range = sheet.getDataRange();
-  
+
   for (var row=5; row<=range.getLastRow(); row++)
   {
     var val = range.getCell(row, SOURCE_TUTS_TWNAME_COL).getValue();
@@ -512,13 +552,16 @@ function generate()
 {
   var base = Browser.inputBox("Name des Spreadsheets von dem das "
                             + "Layout kopiert wird: ");
+  if (base === "cancel")
+    return;
+
   var ss = getSpreadsheetByName(base);
   if (ss === null)
   {
     Browser.msgBox("Konnte Spreadsheet nicht finden :-(");
     return false;
   }
-  
+
   readData();
   generateSpreadsheets(ss);
 }
@@ -529,15 +572,12 @@ function generate()
 //
 function readData()
 {
-  var STUDS_SHEET = "Studenten";
-  var TUTS_SHEET = "Tutoren";
-  
   var group_col = 1;
   var matrnr_col = 2;
   var fname_col = 3;
   var sname_col = 4;
   var tname_col = 5;
-  
+
   var base_path = [3, 2];
   var first_students_row = 5;
   var first_tutors_row = 4;
@@ -546,11 +586,11 @@ function readData()
   var tut_fname_col = 7;
   var tut_sname_col = 6;
   var tut_mail_col = 12;
-  
+
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName(STUDS_SHEET);
+  var sheet = ss.getSheetByName(SOURCE_SHEET_STUD);
   var range = sheet.getDataRange();
-  
+
   // read data[meta]
   data['meta'] = [];
   for (var col=2; col<5; col++)
@@ -559,11 +599,11 @@ function readData()
     if (value)
       data['meta'].push(value);
   }
-  
+
   // read data[base]
   data['base'] = content(range.getCell(base_path[0], base_path[1])
                               .getValue());
-  
+
   // read students & groups
   data['students'] = [];
   var start = Math.min(group_col, matrnr_col, fname_col, sname_col,
@@ -575,7 +615,7 @@ function readData()
     // skip empty lines
     if (content(range.getCell(row, matrnr_col).getValue()) === "")
       continue;
-    
+
     var student = {};
     for (var col=start; col<=end; col++)
     {
@@ -608,9 +648,9 @@ function readData()
   }
 
   // read tutors
-  var sheet_tuts = ss.getSheetByName(TUTS_SHEET);
+  var sheet_tuts = ss.getSheetByName(SOURCE_SHEET_TUTS);
   var range = sheet_tuts.getDataRange();
-  
+
   data['tutors'] = {};
   data['email'] = {};
   for (var row=first_tutors_row; row<=range.getLastRow(); row++)
@@ -619,10 +659,10 @@ function readData()
     var fname = content(range.getCell(row, tut_fname_col).getValue());
     var sname = content(range.getCell(row, tut_sname_col).getValue());
     var email = content(range.getCell(row, tut_mail_col).getValue());
-    
+
     if (group === "" || typeof(group) !== "number")
       continue; // skip empty line
-    
+
     data['tutors'][group] = sname + " " + fname;
     data['email'][group] = email;
   }
@@ -633,7 +673,7 @@ function readData()
   for (var _ in data['groups'])
   {
     var group = data['groups'][_];
-    
+
     if (data['tutors'][group] === undefined)
     {
       if (limit-- > 0)
@@ -645,23 +685,23 @@ function readData()
     }
   }
   data['groups'] = groups;
-  
+
   // Checks
   if (data['groups'].length === 0)
     Browser.msgBox("Ich konnte gar keine Gruppen finden?!");
   if (data['students'].length === 0)
     Browser.msgBox("Ich konnte keine Studenten finden :-(");
-  
+
   return true;
 }
 
 function generateSpreadsheets(base_ss)
 {
   // TODO: These fields require a better usability design
-  
+
   // Benotung Spreadsheet
-  var ben_first_student_row = 5;
-  
+  var ben_first_student_row = 3;
+
   var ben_group_col       = 1;
   var ben_matrnr_col      = 2;
   var ben_name_col        = 3;
@@ -670,19 +710,19 @@ function generateSpreadsheets(base_ss)
 
   var ben_first_ex_col    = 10;
   var ben_last_ex_col     = 12;
-  
+
   var ben_totalpoints_col = 14;
   var ben_mark_col        = 15;
-  
+
   // Exercise(s) Spreadsheet
-  var total_points        = [[36, 4], [22, 4], [42, 4]];
-  var bonus               = [49, 51, 81];
-  var write               = [45, 47, 77];
+  var total_points        = [[46, 4], [49, 4], [78, 4]]; // row numbers
+  var bonus               = [47, 50, 79];
+  var write               = [43, 46, 75];  // Row of total points formula
 
   var spec_col            = 3;
   var first_student_col   = 4;
-  var twiki_name_row      = 2;
-  var martnr_row          = 3;
+  var twiki_name_row      = 1;
+  var matrnr_row          = 2;
 
   for (var g_index in data['groups'])
   {
@@ -692,34 +732,27 @@ function generateSpreadsheets(base_ss)
 
     if (SET_PERMISSIONS)
     {
-      var rights_config = {editorAccess: true, emailInvitations: true};
+      var rights_config = {editorAccess: true, emailInvitations: false};
       ss.addCollaborators(data['email'][group], rights_config);
     }
-    
+
     // get sheets & - names
     var sheets = base_ss.getSheets();
     var sheet_names = [];
     for (var s_index in sheets)
       sheet_names.push(sheets[s_index].getName());
-    
+
     for (var index in sheets)
     {
       var sheet = sheets[index].copyTo(ss);
       sheet.setName(getOriginalSheetname(sheet.getName()));
 
-      // write metadata
-      var range = sheet.getRange(1, 1, 1, data['meta'].length+1);
-      range.getCell(1, 1).setValue(data['tutors'][group]);
-      for (var index_ in data['meta'])
-        range.getCell(1, parseInt(index_)+1)
-             .setValue(data['meta'][parseInt(index_)]);
-      
       if (content(sheet.getName()) === "Benotung")
       {
         // write Benotungssheet data
-        var range = sheet.getRange(1, 1, 
+        var range = sheet.getRange(1, 1,
                data['students'].length + ben_first_student_row, 17);
-      
+
         var gs_counter = 0; // student in group counter
         for (var s_index in data['students'])
         {
@@ -749,7 +782,7 @@ function generateSpreadsheets(base_ss)
             range.getCell(row, col).setFormula("=IF(" + reference
                     + "<0,0," + reference + ")");
           }
-          
+
           range.getCell(row, ben_totalpoints_col)
                .setFormula("=SUM(" + columnId(ben_first_ex_col) + row
                         + ":" + columnId(ben_last_ex_col) + row + ")");
@@ -770,7 +803,7 @@ function generateSpreadsheets(base_ss)
         {
           if (data['students'][s_index]['group'] !== group)
             continue;
-          
+
           var col = first_student_col + gs_counter;
           var ref_t = "'Benotung'!" + columnId(ben_tname_col)
                     + (ben_first_student_row + gs_counter);
@@ -779,16 +812,28 @@ function generateSpreadsheets(base_ss)
 
           range.getCell(twiki_name_row, col).setFormula
             ('=HYPERLINK(CONCATENATE("' + data['base'] + '", ' + ref_t +
-             '), ' + ref_t + ')');
-          range.getCell(martnr_row, col).setFontWeight("bold");
-          range.getCell(martnr_row, col).setFormula('=' + ref_m);
-          
-          var exercise_number = (parseInt(index) - 1);
-          var start = Math.max(twiki_name_row, martnr_row);
-          var tpts = total_points[exercise_number];
+            ', "Solo' + index + '"), ' + ref_t + ')');
+          range.getCell(matrnr_row, col).setFontWeight("bold");
+
+          var exercise_number = parseInt(sheet.getName().match(/\d+/)[0]);
+          var start = Math.max(twiki_name_row, matrnr_row);
+          var tpts = total_points[exercise_number-1];
           var formula = createTpointsQuery(sheet, spec_col, col, start,
-                                   tpts[0], bonus[exercise_number]);
-          range.getCell(write[exercise_number],
+                                   tpts[0], bonus[exercise_number-1]);
+
+          // <hack>
+          if (exercise_number >= 2) {
+              var value_ = '=HYPERLINK(CONCATENATE("' + data['base']
+                            + '", ' + ref_t + ', "Partner' + index
+                            + '"), ' + ref_m + ')';
+              range.getCell(matrnr_row, col).setFormula(value_);
+          } else {
+              // matriculation number
+              range.getCell(matrnr_row, col).setFormula('=' + ref_m);
+          }
+          // </hack>
+
+          range.getCell(write[exercise_number-1],
                         tpts[1] + gs_counter).setFormula(formula);
           gs_counter++;
         }
@@ -814,7 +859,7 @@ function onOpen()
 {
   // Add a search menu.
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  
+
   var menuEntriesGenerate = [
     {name: "Generiere Bewertungsspreadsheet pro Gruppe",
      functionName: "generate"}

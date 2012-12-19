@@ -27,7 +27,7 @@ MENU_ITEM_SET            = "1. Parameter setzen";
 MENU_ITEM_CHECK          = "(2.) Daten überprüfen";
 MENU_ITEM_IMPORT         = "3. Daten importieren";
 USER_BASEURL_DEFAULT     = 'http://gdi.ist.tugraz.at/gdi12/bin/view/Main/';
-SSHEET_NAME_DEFAULT      = '[GDIT] Teilnehmer';
+SSHEET_NAME_DEFAULT      = '[GDIT] Teilnehmer WSXX';
 IMPORT_SHEETNAME_DEFAULT = ''; // if empty, filled with active sheetname
 _E_ZERO = "Nur zur Information: Die Anzahl der %s ist "
         + "0. Ich hoffe das ist korrekt.";
@@ -447,8 +447,8 @@ function checkDatastructure()
       }
     }
   }
-  log.warn(W_GMAIL.replace(/%s/, wrong_mailaddresses.join(",\n")));
-
+  if (wrong_mailaddresses.length > 0)
+    log.warn(W_GMAIL.replace(/%s/, wrong_mailaddresses.join(",\n")));
 
   return true;
 }

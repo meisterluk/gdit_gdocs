@@ -14,8 +14,8 @@
 // GLOBAL CONFIGURATION
 //----------------------------------------------------------------------
 
-MATRNR_ROW    = 3; // row with matr.numbers
-NAME_ROW      = 2; // row with twiki names
+MATRNR_ROW    = 2; // row with matr.numbers
+NAME_ROW      = 1; // row with twiki names
 
 //----------------------------------------------------------------------
 // FUNCTIONALITY
