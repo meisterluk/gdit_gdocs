@@ -893,7 +893,7 @@ function writeData()
   for (var student in data['students'])
     pointsdistri[data['students'][student]]++;
 
-  for (var i=0; i<=EVALUATION_MAX_POINTS; i++)
+  for (var i=SOURCE_MIN_POINTS; i<=EVALUATION_MAX_POINTS; i++)
   {
     range.getCell(row_id + i, 1).setValue(i);
     range.getCell(row_id + i, 2).setValue(pointsdistri[i]);
@@ -1099,14 +1099,14 @@ function writeExportData()
   var grade_col = 0;
   
   // search in first 5 rows for matrnr/tpoints columns
+  var regex1 = new RegExp(IMPORT_FIELD_MATR, "i");
+  var regex2 = new RegExp(IMPORT_FIELD_GRADE, "i");
   search:
   for (var row=1; row<=5; row++)
   {
     for (var col=1; col<=range.getLastColumn(); col++)
     {
       var val = content(range.getCell(row, col).getValue());
-      var regex1 = new RegExp(IMPORT_FIELD_MATR, "i");
-      var regex2 = new RegExp(IMPORT_FIELD_GRADE, "i");
       if (val.match(regex1))
         matrnr_col = col;
       if (val.match(regex2))
@@ -1140,8 +1140,8 @@ function writeExportData()
     {
       range.getCell(row, grade_col).setValue(grade);
       wrote_something = true;
-      if (grade === 0)
-        Logger.log("Student " + val_matrnr + " got grade 0!");
+      if (grade < 1 || grade > 5)
+        Logger.log("Student " + val_matrnr + " got grade " + grade + "!");
     } else
       if (typeof(val_matrnr) === "number")
         Logger.log("Cannot find student " + val_matrnr + " in "
