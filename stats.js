@@ -108,7 +108,7 @@ pds = {
       var range = sheet.getDataRange();
       var value = range.getCell(1, 1).getValue();
       ss.setActiveSheet(old_sheet);
-      
+
       return JSON.parse(value);
     },
     close    : function () {
@@ -181,7 +181,7 @@ function camel_case(word)
 function twiki_username(first_name, last_name)
 {
   var name = first_name + last_name;
-  
+
   name = name.replace("ä", "ae");
   name = name.replace("ö", "oe");
   name = name.replace("ü", "ue");
@@ -282,7 +282,7 @@ function specifyGroup(basename, group_id)
 function getRealTutorSpecification(tutor)
 {
   // remove leading "Tutor "
-  return tutor.toString().substr(6);  
+  return tutor.toString().substr(6);
 }
 
 //
@@ -428,21 +428,21 @@ function readStat(col_1, col_2, start_row, end_row)
 
   var topic = content(range.getCell(first_row, first_col).getValue());
   var field = content(range.getCell(first_row, last_col).getValue());
-  
+
   var stats = { topic : topic, field : field };
-  
+
   for (var row=first_row+1; row<=last_row; row++)
   {
     var key   = content(range.getCell(row, first_col).getValue());
     var value = content(range.getCell(row, last_col).getValue());
-    
+
     // key must not be empty
     if (key === "")
       return false;
-    
+
     stats[key] = value;
   }
-  
+
   return stats;
 }
 
@@ -457,9 +457,9 @@ function requestStatsParameters()
 
   var ass = SpreadsheetApp.getActiveSpreadsheet();
   var app = UiApp.createApplication().setTitle('Parameter setzen');
-  
+
   var INTRO = "Setze die Parameter, um die Statistiken zu erzeugen:";
-  
+
   var BASE = 'Name der Bewertungsspreadsheets (%d wird durch eine '
            + 'fortlaufende Nummer ersetzt)';
   var RANGE = 'Gebe den Anfang und das Ende der fortlaufenden Nummer '
@@ -478,7 +478,7 @@ function requestStatsParameters()
   grid.setWidget(2, 0, app.createLabel(BOUND));
   grid.setWidget(2, 1, app.createTextBox().setName('minpoints')
                           .setText(SOURCE_MINPOINTS.toString()));
-    
+
   var submit = app.createButton('Setzen');
   var handler = app.createServerClickHandler('submitStatsParameters');
   handler.addCallbackElement(grid);
@@ -510,18 +510,26 @@ function requestExportParameters()
            + 'Erkennen der Matrikelnummerspalte';
   var GRADE = 'RegEx ohne Groß-Kleinschreibung-Unterscheidung zum '
             + 'Erkennen der Spalte für Noteneintragung';
+  var NOTE = 'Bitte beachte, dass die Einstellungen von "Parameter '
+           + 'setzen" des Imports noch weiterhin gelten (wie zB '
+           + 'Mindestpunkteanzahl)';
 
-  var grid = app.createGrid(3, 2);
-  grid.setWidget(0, 0, app.createLabel(SSNAME));
-  grid.setWidget(0, 1, app.createTextBox().setName('ssname')
-                          .setText(IMPORT_SSNAME_DEFAULT));
-  grid.setWidget(1, 0, app.createLabel(MATR));
-  grid.setWidget(1, 1, app.createTextBox().setName('matr')
-                          .setText(IMPORT_FIELD_MATR));
-  grid.setWidget(2, 0, app.createLabel(GRADE));
-  grid.setWidget(2, 1, app.createTextBox().setName('grade')
-                          .setText(IMPORT_FIELD_GRADE));
-    
+  var grid = app.createGrid(2, 1);
+
+  var subgrid = app.createGrid(3, 2);
+  subgrid.setWidget(0, 0, app.createLabel(SSNAME));
+  subgrid.setWidget(0, 1, app.createTextBox().setName('ssname')
+                             .setText(IMPORT_SSNAME_DEFAULT));
+  subgrid.setWidget(1, 0, app.createLabel(MATR));
+  subgrid.setWidget(1, 1, app.createTextBox().setName('matr')
+                             .setText(IMPORT_FIELD_MATR));
+  subgrid.setWidget(2, 0, app.createLabel(GRADE));
+  subgrid.setWidget(2, 1, app.createTextBox().setName('grade')
+                             .setText(IMPORT_FIELD_GRADE));
+
+  grid.setWidget(0, 0, subgrid);
+  grid.setWidget(1, 0, app.createLabel(NOTE));
+
   var submit = app.createButton('Setzen');
   var handler = app.createServerClickHandler('submitExportParameters');
   handler.addCallbackElement(grid);
@@ -598,7 +606,7 @@ function submitStatsParameters(e)
     var range_valid = false;
   else
     var range_valid = true;
-  
+
   // since this is not stored persistently ...
   SOURCE_BASENAME      = e.parameter.basename;
   SOURCE_MINPOINTS     = e.parameter.minpoints;
@@ -614,7 +622,7 @@ function submitStatsParameters(e)
         SOURCE_LAST_GROUP       : SOURCE_LAST_GROUP,
         SOURCE_MINPOINTS        : SOURCE_MINPOINTS
   });
-  
+
   // Clean up - get the UiApp object, close it, and return
   var app = UiApp.getActiveApplication();
   app.close();
@@ -637,7 +645,7 @@ function submitExportParameters(e)
         IMPORT_FIELD_MATR       : IMPORT_FIELD_MATR,
         IMPORT_FIELD_GRADE      : IMPORT_FIELD_GRADE
   });
-  
+
   // Clean up - get the UiApp object, close it, and return
   var app = UiApp.getActiveApplication();
   app.close();
@@ -650,7 +658,7 @@ function submitExportParameters(e)
 function onOpen()
 {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  
+
   // Add menu item for import functionality
   var menuEntries = [
     {name: MENU_ITEM_SET, functionName: "setStatsParameters"},
@@ -690,7 +698,7 @@ function setExportParameters()
 function readData(write, students_feedback)
 {
   autoloadConfig();
-  
+
   // create map to get (column_id => exercise_id) association
   var exercises = {};
   var exercise_id = 1;
@@ -700,7 +708,7 @@ function readData(write, students_feedback)
     exercises[col] = exercise_id;
     data['exercises'][exercise_id++] = {};
   }
-    
+
 
 
   for (var group_id=SOURCE_FIRST_GROUP; group_id<=SOURCE_LAST_GROUP;
@@ -736,7 +744,7 @@ function readData(write, students_feedback)
       var matrnr = range.getCell(row, SOURCE_MATRNR_COLUMN).getValue();
       if (typeof matrnr !== "number")
         continue;
-      
+
       // Total points
       var points = range.getCell(row, SOURCE_TOTAL_POINTS_COLUMN)
                         .getValue();
@@ -789,9 +797,9 @@ function writeData()
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getActiveSheet();
   sheet.clear();
-  
+
   var stats = {};
-  
+
   var range = sheet.getRange(1, 1, 16 + getNumberOfTutors()
                 + EVALUATION_MAX_POINTS, 4);
   var first_column = sheet.getRange(1, 1, 1, 4);
@@ -803,7 +811,7 @@ function writeData()
     range.getCell(1, 2).setValue(add_info[0]);
     range.getCell(1, 3).setValue(add_info[1]);
   }
-  
+
   // Tutoren
   range.getCell(3, 1).setFontWeight("bold");
   range.getCell(3, 1).setValue("Tutor");
@@ -823,16 +831,16 @@ function writeData()
     }
     stats[0] = getAverage(average).toFixed(DEC);
     stats[1] = data['tutors'][tutor].length;
-    
+
     range.getCell(row_id, 1).setValue(tutor);
     range.getCell(row_id, 2).setValue(stats[0]);
     range.getCell(row_id, 3).setValue(stats[1]);
     range.getCell(row_id, 4).setValue(stats[2]);
-    
+
     stats = {};
     row_id++;
   }
-  
+
   // Aufgabe
   range.getCell(row_id, 1).setFontWeight("bold");
   range.getCell(row_id, 1).setValue("Aufgabe");
@@ -851,13 +859,13 @@ function writeData()
       if (data['exercises'][exercise][student] >= SOURCE_MIN_POINTS)
         points.push(data['exercises'][exercise][student]);
     }
-    
+
     range.getCell(row_id, 1).setValue(exercise);
     range.getCell(row_id, 2).setValue(participated_students);
     range.getCell(row_id, 3).setValue(getAverage(points).toFixed(DEC));
     row_id++;
   }
-  
+
   // Noten
   range.getCell(row_id, 1).setFontWeight("bold");
   range.getCell(row_id, 1).setValue("Note");
@@ -964,7 +972,7 @@ function createChart()
 
       col_id++;
     }
-    
+
     // reset to second column for next stats
     col_id = STATS_FIRST_COL + 1;
   }
@@ -977,9 +985,9 @@ function createChart()
                                 + "erzeugen.");
   }
 
-  // add configuration to stats  
+  // add configuration to stats
   stats = configureStatsManually(stats);
-  
+
   var options = ['column_append_title', 'minmax'];
 
   // Create stats charts
@@ -997,10 +1005,10 @@ function createChart()
         continue;          // skip options
       if (contains(["field", "topic"], key))
         continue;          // skip metadata
-      
+
       if (++counter > 1)
         continue;
-    
+
       if (typeof key === "number")
         var type1 = Charts.ColumnType.NUMBER;
       else
@@ -1032,7 +1040,7 @@ function createChart()
     }
     dataTable.build();
 
-    var chart = Charts.newColumnChart().setRange(1, 5)  
+    var chart = Charts.newColumnChart().setRange(1, 5)
                       .setDataTable(dataTable)
                       .setColors([CHART_COLOR])
                       .setDimensions(CHART_WIDTH, CHART_HEIGHT)
@@ -1047,11 +1055,11 @@ function createChart()
     chart = chart.build();
 
     // Save the chart to our Document List
-    var file = DocsList.createFile(chart);  
+    var file = DocsList.createFile(chart);
     file.rename("[Chart] " + title);
     create_counter++;
   }
-  
+
   Browser.msgBox(create_counter + " Charts erzeugt :-)");
 
   return ui;
@@ -1072,7 +1080,7 @@ function writeExportData()
   {
     var sheet = ass.getSheetByName(IMPORT_SHEETNAME_DEFAULT);
     if (sheet === null)
-      found = false; 
+      found = false;
   }
   if (!found)
   {
@@ -1082,7 +1090,7 @@ function writeExportData()
     return false;
   }
   var range = sheet.getDataRange();
-  
+
   // read data['students']
   readData(false, false);
 
@@ -1091,13 +1099,13 @@ function writeExportData()
     Browser.msgBox(E_READDATA);
     return false;
   }
-  
+
   // Okay, now we have data['students'] with the data to export
   // and sheet/range point to the sheet to export data to.
-  
+
   var matrnr_col = 0;
   var grade_col = 0;
-  
+
   // search in first 5 rows for matrnr/tpoints columns
   var regex1 = new RegExp(IMPORT_FIELD_MATR, "i");
   var regex2 = new RegExp(IMPORT_FIELD_GRADE, "i");
@@ -1111,7 +1119,7 @@ function writeExportData()
         matrnr_col = col;
       if (val.match(regex2))
         grade_col = col;
-      
+
       if (matrnr_col !== 0 && grade_col !== 0)
         break search;
     }
@@ -1128,12 +1136,12 @@ function writeExportData()
                  + "Regex matcht nicht.");
     return false;
   }
-  
+
   var wrote_something = false;
-  for (var row=1; row<range.getLastRow(); row++)
+  for (var row=1; row<=range.getLastRow(); row++)
   {
     var val_matrnr = content(range.getCell(row, matrnr_col).getValue());
-    
+
     var tpts = data['students'][val_matrnr];
     var grade = pointsToMark(tpts);
     if (tpts !== undefined)
@@ -1174,7 +1182,7 @@ function help()
 {
   var ass = SpreadsheetApp.getActiveSpreadsheet();
   var app = UiApp.createApplication().setTitle('Export Skript');
-  
+
   var p1 = "Dieses Skript ermöglicht es die Ergebnisse der Benotung "
          + "aus den einzelnen Gruppen zusammenzuführen. Im zweiten "
          + "Schritt können entsprechende Statistiken generiert werden. "
