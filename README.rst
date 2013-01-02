@@ -4,7 +4,7 @@ gdit_docs
 :project:       gdit_docs
 :author:        meisterluk
 :date:          11.10.14
-:version:       1.0.0public
+:version:       1.1.0approved
 :license:       LGPL v3.0
 
 Task assignment
