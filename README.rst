@@ -4,6 +4,7 @@ gdit_docs
 :project:       gdit_docs
 :author:        meisterluk
 :date:          11.10.14
+:state:         shut down in 2013
 :version:       1.1.0approved
 :license:       LGPL v3.0
 
@@ -12,6 +13,8 @@ Task assignment
 
 gdit_docs is a domain-specific script collection to support tutors
 using Google Docs during the course.
+
+This project was shut down in 2013, because of a change in infrastructure.
 
 * old spreadsheets are templates #done
 * optional fields for point penalties including commentary possibility #done
